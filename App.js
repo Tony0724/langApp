@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components/native';
+import { Animated } from 'react-native';
 
 const Container = styled.View`
   flex: 1;
@@ -11,23 +12,15 @@ const Box = styled.TouchableOpacity`
   width: 200px;
   height: 200px;
 `
+const AnimatedBox = Animated.createAnimatedComponent(Box)
 
 export default function App() {
-  const [y, setY] = useState(0);
-  const [intervalID, setIntervalID] = useState(null)
-  const moveUp = () => {
-    const id = setInterval(() => setY(prev => prev + 1), 1)
-    setIntervalID(id)
-  }
-  useEffect(() => {
-    if(y === 200) {
-      clearInterval(intervalID)
-    }
-  }, [y, intervalID])
+  const Y = new Animated.Value(0)
+  const moveUp = () => {}
   return (
     <Container>
-      <Box onPress={moveUp} style={{
-        transform: [{translateY: y}]
+      <AnimatedBox onPress={moveUp} style={{
+        transform: [{translateY: Y}]
       }} />
     </Container>
   )
