@@ -1,7 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import styled from 'styled-components/native';
 import { Animated, PanResponder, View, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import icons from './icons';
 
 const Container = styled.View`
   flex: 1;
@@ -89,12 +90,18 @@ export default function App() {
     }
 
   })).current;
+  const onDismiss = () => {
+    scale.setValue(1)
+    position.setValue(0);
+    setIndex((prev) => prev + 1)
+  }
   const closePress = () => {
-    goLeft.start()
+    goLeft.start(onDismiss)
   }
   const checkPress = () => {
-    goRight.start()
+    goRight.start(onDismiss)
   }
+  const [index, setIndex] = useState(0);
   return (
     <Container>
       <CardContainer>
@@ -113,7 +120,7 @@ export default function App() {
       }),
       transform: [{scale: secondScale}]
       }}>
-        <Ionicons name="beer" color="#192a56" size={98} />
+        <Ionicons name={icons[index + 1]} color="#192a56" size={98} />
       </Card>
       <Card 
       {...panResponder.panHandlers}
@@ -131,7 +138,7 @@ export default function App() {
       }),
       transform: [{scale}, {translateX: position}, {rotateZ: rotation}]
       }}>
-        <Ionicons name="pizza" color="#192a56" size={98} />
+        <Ionicons name={icons[index]} color="#192a56" size={98} />
       </Card>
       </CardContainer>
       <ButtonContainer>
