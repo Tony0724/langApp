@@ -1,8 +1,8 @@
-import React, { useRef, useState } from 'react';
-import styled from 'styled-components/native';
-import { Animated, PanResponder, View, Platform } from "react-native";
+import React, { useRef, useState } from "react";
+import { Animated, PanResponder, Text, View } from "react-native";
+import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
-import icons from './icons';
+import icons from "./icons";
 
 const Container = styled.View`
   flex: 1;
@@ -19,22 +19,22 @@ const Card = styled(Animated.createAnimatedComponent(View))`
   align-items: center;
   border-radius: 12px;
   position: absolute;
-`
+`;
+
+const Btn = styled.TouchableOpacity`
+  margin: 0px 10px;
+`;
+
+const ButtonContainer = styled.View`
+  flex-direction: row;
+  flex: 1;
+`;
 
 const CardContainer = styled.View`
   flex: 3;
   justify-content: center;
   align-items: center;
-`
-
-const Btn = styled.TouchableOpacity`
-  margin: 0px 10px;
-`
-
-const ButtonContainer = styled.View`
-  flex-direction: row;
-  flex: 1;
-`
+`;
 
 export default function App() {
   const scale = useRef(new Animated.Value(1)).current;
@@ -46,62 +46,67 @@ export default function App() {
   const secondScale = position.interpolate({
     inputRange: [-300, 0, 300],
     outputRange: [1, 0.7, 1],
-    extrapolate: "clamp"
-  })
-  const onPressIn = Animated.spring(scale, { toValue: 0.95, useNativeDriver: true });
+    extrapolate: "clamp",
+  });
+  // Animations
   const onPressOut = Animated.spring(scale, {
     toValue: 1,
+    useNativeDriver: true,
+  });
+  const onPressIn = Animated.spring(scale, {
+    toValue: 0.95,
+    useNativeDriver: true,
+  });
+  const goCenter = Animated.spring(position, {
+    toValue: 0,
     useNativeDriver: true,
   });
   const goLeft = Animated.spring(position, {
     toValue: -500,
     tension: 5,
     useNativeDriver: true,
-  })
+    restDisplacementThreshold: 100,
+    restSpeedThreshold: 100,
+  });
   const goRight = Animated.spring(position, {
     toValue: 500,
     tension: 5,
     useNativeDriver: true,
-  })
-  const panResponder = useRef(PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onPanResponderMove: (_, {dx}) => {
-      position.setValue(dx)
-    },
-    onPanResponderGrant: () => {
-      Animated.parallel([
-        onPressIn
-      ]).start()
-    },
-    onPanResponderRelease: (_, {dx}) => {
-      if(dx < -250) {
-        goLeft.start()
-      } else if(dx > 250) {
-        goRight.start()
-      } else {
-        Animated.parallel([
-          onPressOut,
-          Animated.spring(position, {
-            toValue: 0,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      }
-    }
-
-  })).current;
+    restDisplacementThreshold: 100,
+    restSpeedThreshold: 100,
+  });
+  // Pan Responders
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: (_, { dx }) => {
+        position.setValue(dx);
+      },
+      onPanResponderGrant: () => onPressIn.start(),
+      onPanResponderRelease: (_, { dx }) => {
+        if (dx < -250) {
+          goLeft.start(onDismiss);
+        } else if (dx > 250) {
+          goRight.start(onDismiss);
+        } else {
+          Animated.parallel([onPressOut, goCenter]).start();
+        }
+      },
+    })
+  ).current;
+  // State
+  const [index, setIndex] = useState(0);
   const onDismiss = () => {
-    scale.setValue(1)
-    position.setValue(0);
+    scale.setValue(1);
     setIndex((prev) => prev + 1)
+    position.setValue(0);
   }
   const closePress = () => {
-    goLeft.start(onDismiss)
-  }
+    goLeft.start(onDismiss);
+  };
   const checkPress = () => {
-    goRight.start(onDismiss)
-  }
-  const [index, setIndex] = useState(0);
+    goRight.start(onDismiss);
+  };
   return (
     <Container>
       <CardContainer>
